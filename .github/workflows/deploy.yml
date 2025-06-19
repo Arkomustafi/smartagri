@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Runs on pushes to the main branch
+  push:
+    branches:
+      - main
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Grant GITHUB_TOKEN the permissions it needs to deploy to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Using a long-term support version of Node.js
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        # Use the secret as an environment variable for the build command
+        run: npm run build
+        env:
+          REACT_APP_GEMINI_API_KEY: ${{ secrets.REACT_APP_GEMINI_API_KEY }}
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # The directory the build artifacts are in
+          publish_dir: ./build
